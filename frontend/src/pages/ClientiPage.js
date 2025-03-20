@@ -31,7 +31,8 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  Grid
+  Grid,
+  FormControlLabel
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -328,7 +329,7 @@ const ClientiPage = () => {
           setClienti(result.data);
           showSnackbar('Importazione completata: ' + (result.data?.length || 0) + ' clienti', 'success');
         } else {
-          showSnackbar(\`Errore nell'importazione: \${result.message}\`, 'error');
+          showSnackbar(`Errore nell'importazione: ${result.message}`, 'error');
         }
         
         setLoading(false);
@@ -336,8 +337,8 @@ const ClientiPage = () => {
       
       input.click();
     } catch (error) {
-      console.error('Errore durante l\\'importazione:', error);
-      showSnackbar('Errore durante l\\'importazione', 'error');
+      console.error(`Errore durante l'importazione:`, error);
+      showSnackbar(`Errore durante l'importazione`, 'error');
       setLoading(false);
     }
   };
@@ -353,11 +354,11 @@ const ClientiPage = () => {
       if (result.success) {
         showSnackbar('Esportazione completata con successo', 'success');
       } else {
-        showSnackbar(\`Errore nell'esportazione: \${result.message}\`, 'error');
+        showSnackbar(`Errore nell'esportazione: ${result.message}`, 'error');
       }
     } catch (error) {
-      console.error('Errore durante l\\'esportazione:', error);
-      showSnackbar('Errore durante l\\'esportazione', 'error');
+      console.error(`Errore durante l'esportazione:`, error);
+      showSnackbar(`Errore durante l'esportazione`, 'error');
     } finally {
       setLoading(false);
     }
@@ -499,7 +500,7 @@ const ClientiPage = () => {
   
   // Elimina cliente
   const handleDeleteCliente = async (cliente) => {
-    if (window.confirm(\`Sei sicuro di voler eliminare il cliente "\${cliente.nome}"?\`)) {
+    if (window.confirm(`Sei sicuro di voler eliminare il cliente "${cliente.nome}"?`)) {
       try {
         setLoading(true);
         
@@ -512,12 +513,12 @@ const ClientiPage = () => {
           
           showSnackbar('Cliente eliminato con successo', 'success');
         } else {
-          console.error('Errore durante l\\'eliminazione:', result.error);
-          showSnackbar('Errore durante l\\'eliminazione', 'error');
+          console.error(`Errore durante l'eliminazione:`, result.error);
+          showSnackbar(`Errore durante l'eliminazione`, 'error');
         }
       } catch (error) {
-        console.error('Errore durante l\\'eliminazione:', error);
-        showSnackbar('Errore durante l\\'eliminazione', 'error');
+        console.error(`Errore durante l'eliminazione:`, error);
+        showSnackbar(`Errore durante l'eliminazione`, 'error');
       } finally {
         setLoading(false);
       }
@@ -595,7 +596,7 @@ const ClientiPage = () => {
       return;
     }
     
-    if (window.confirm(\`Sei sicuro di voler eliminare \${selected.length} \${selected.length === 1 ? 'cliente' : 'clienti'}? Questa azione non può essere annullata immediatamente.\`)) {
+    if (window.confirm(`Sei sicuro di voler eliminare ${selected.length} ${selected.length === 1 ? 'cliente' : 'clienti'}? Questa azione non può essere annullata immediatamente.`)) {
       handleDeleteBulk();
     }
     
@@ -622,10 +623,10 @@ const ClientiPage = () => {
             updatedClienti = updatedClienti.filter(c => c.id !== id);
             successCount++;
           } else {
-            console.error(\`Errore durante l'eliminazione del cliente con ID \${id}:\`, result.error);
+            console.error(`Errore durante l'eliminazione del cliente con ID ${id}:`, result.error);
           }
         } catch (error) {
-          console.error(\`Errore durante l'eliminazione del cliente con ID \${id}:\`, error);
+          console.error(`Errore durante l'eliminazione del cliente con ID ${id}:`, error);
         }
       }
       
@@ -636,10 +637,10 @@ const ClientiPage = () => {
       setSelected([]);
       setSelectAll(false);
       
-      showSnackbar(\`Eliminati con successo \${successCount} \${successCount === 1 ? 'cliente' : 'clienti'}\`, 'success');
+      showSnackbar(`Eliminati con successo ${successCount} ${successCount === 1 ? 'cliente' : 'clienti'}`, 'success');
     } catch (error) {
-      console.error('Errore durante l\\'eliminazione multipla:', error);
-      showSnackbar('Errore durante l\\'eliminazione multipla', 'error');
+      console.error(`Errore durante l'eliminazione multipla:`, error);
+      showSnackbar(`Errore durante l'eliminazione multipla`, 'error');
     } finally {
       setLoading(false);
     }
@@ -673,7 +674,7 @@ const ClientiPage = () => {
         // Aggiorna lo stato locale
         setClienti(result.data);
         
-        showSnackbar(\`Aggiornamento completato: \${selected.length} elementi\`, 'success');
+        showSnackbar(`Aggiornamento completato: ${selected.length} elementi`, 'success');
         
         // Chiudi i dialoghi
         setOpenAssegnaRegaloDialog(false);
@@ -684,12 +685,12 @@ const ClientiPage = () => {
         setSelected([]);
         setSelectAll(false);
       } else {
-        console.error('Errore durante l\\'aggiornamento:', result.error);
-        showSnackbar('Errore durante l\\'aggiornamento', 'error');
+        console.error(`Errore durante l'aggiornamento:`, result.error);
+        showSnackbar(`Errore durante l'aggiornamento`, 'error');
       }
     } catch (error) {
-      console.error('Errore durante l\\'aggiornamento:', error);
-      showSnackbar('Errore durante l\\'aggiornamento', 'error');
+      console.error(`Errore durante l'aggiornamento:`, error);
+      showSnackbar(`Errore durante l'aggiornamento`, 'error');
     } finally {
       setLoading(false);
     }
@@ -848,19 +849,19 @@ const ClientiPage = () => {
           alignItems: 'center'
         }}>
           <FormControl size="small" fullWidth>
-  <InputLabel>{settings.regaloCorrente || 'Regalo'}</InputLabel>
-  <Select
-    value={filtroGrappa}
-    label={settings.regaloCorrente || 'Regalo'}
-    onChange={(e) => setFiltroGrappa(e.target.value)}
-  >
-    <MenuItem value="">Tutti</MenuItem>
-    <MenuItem value="si">Con regalo</MenuItem>
-    <MenuItem value="no">Senza regalo</MenuItem>
-  </Select>
-</FormControl>
+            <InputLabel>{settings.regaloCorrente || 'Regalo'}</InputLabel>
+            <Select
+              value={filtroGrappa}
+              label={settings.regaloCorrente || 'Regalo'}
+              onChange={(e) => setFiltroGrappa(e.target.value)}
+            >
+              <MenuItem value="">Tutti</MenuItem>
+              <MenuItem value="si">Con regalo</MenuItem>
+              <MenuItem value="no">Senza regalo</MenuItem>
+            </Select>
+          </FormControl>
 
-<FormControl size="small" fullWidth>
+          <FormControl size="small" fullWidth>
   <InputLabel>Consegna</InputLabel>
   <Select
     value={filtroConsegna}
