@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
@@ -75,6 +75,11 @@ def create_app():
             'version': '1.0.0',
             'excel_support': has_excel_support
         })
+    
+    # Versione senza prefisso /api
+    @app.route('/status')
+    def status_no_prefix():
+        return status()
         
     # Handler per errori 404
     @app.errorhandler(404)
@@ -91,6 +96,79 @@ def create_app():
             'success': False,
             'error': 'Errore del server'
         }), 500
+    
+    # Rotte senza prefisso /api per compatibilità col frontend
+    
+    # Settings
+    @app.route('/settings')
+    def get_settings_no_prefix():
+        from routes.impostazioni import get_settings
+        return get_settings()
+    
+    # Clienti
+    @app.route('/clienti')
+    def get_clienti_no_prefix():
+        include_eliminati = request.args.get('include_eliminati', 'false').lower() == 'true'
+        from routes.contatti import get_contatti
+        return get_contatti('clienti')
+    
+    @app.route('/clienti', methods=['POST'])
+    def save_clienti_no_prefix():
+        from routes.contatti import save_contatti
+        return save_contatti('clienti')
+    
+    # Partner
+    @app.route('/partner')
+    def get_partner_no_prefix():
+        include_eliminati = request.args.get('include_eliminati', 'false').lower() == 'true'
+        from routes.contatti import get_contatti
+        return get_contatti('partner')
+    
+    @app.route('/partner', methods=['POST'])
+    def save_partner_no_prefix():
+        from routes.contatti import save_contatti
+        return save_contatti('partner')
+    
+    # Eliminati
+    @app.route('/eliminati')
+    def get_eliminati_no_prefix():
+        from routes.contatti import get_eliminati
+        return get_eliminati()
+    
+    # Move to eliminati
+    @app.route('/move-to-eliminati/<string:tipo>/<int:id>', methods=['POST'])
+    def move_to_eliminati_no_prefix(tipo, id):
+        from routes.contatti import move_to_eliminati
+        return move_to_eliminati(tipo, id)
+    
+    # Restore from eliminati
+    @app.route('/restore-from-eliminati/<int:id>', methods=['POST'])
+    def restore_from_eliminati_no_prefix(id):
+        from routes.contatti import restore_from_eliminati
+        return restore_from_eliminati(id)
+    
+    # Bulk updates
+    @app.route('/update-bulk/<string:tipo>', methods=['POST'])
+    def update_bulk_no_prefix(tipo):
+        from routes.contatti import update_bulk
+        return update_bulk(tipo)
+    
+    # Excel import fallback
+    if not has_excel_support:
+        @app.route('/import-excel/<string:tipo>', methods=['POST'])
+        def import_excel_fallback_no_prefix(tipo):
+            return jsonify({
+                'success': False,
+                'message': 'Funzionalità di importazione Excel non disponibile su questo server',
+                'data': []
+            }), 503
+        
+        @app.route('/export-gls', methods=['GET'])
+        def export_gls_fallback_no_prefix():
+            return jsonify({
+                'success': False,
+                'message': 'Funzionalità di esportazione GLS non disponibile su questo server'
+            }), 503
     
     # Inizializza impostazioni predefinite
     with app.app_context():
