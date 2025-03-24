@@ -114,8 +114,73 @@ def create_app():
     
     @app.route('/clienti', methods=['POST'])
     def save_clienti_no_prefix():
-        from routes.contatti import save_contatti
-        return save_contatti('clienti')
+    from models import Contatto, db
+    from datetime import datetime
+    data = request.json
+    
+    try:
+        # Salva direttamente i nuovi clienti nel database
+        for item in data:
+            if 'id' in item and item['id']:
+                # Cerca il cliente esistente
+                cliente = Contatto.query.get(item['id'])
+                if cliente:
+                    # Aggiorna i campi
+                    for key, value in item.items():
+                        if key != 'id' and hasattr(cliente, key):
+                            setattr(cliente, key, value)
+                    cliente.lastUpdate = datetime.utcnow()
+                else:
+                    # Crea un nuovo cliente se non esiste
+                    new_cliente = Contatto(tipo='clienti')
+                    for key, value in item.items():
+                        if hasattr(new_cliente, key):
+                            setattr(new_cliente, key, value)
+                    new_cliente.createdAt = datetime.utcnow()
+                    new_cliente.lastUpdate = datetime.utcnow()
+                    db.session.add(new_cliente)
+            else:
+                # Crea un nuovo cliente senza ID
+                new_cliente = Contatto(tipo='clienti')
+                for key, value in item.items():
+                    if hasattr(new_cliente, key):
+                        setattr(new_cliente, key, value)
+                new_cliente.createdAt = datetime.utcnow()
+                new_cliente.lastUpdate = datetime.utcnow()
+                db.session.add(new_cliente)
+        
+        # Salva le modifiche
+        db.session.commit()
+        
+        # Carica i clienti aggiornati
+        clienti = Contatto.query.filter_by(tipo='clienti', eliminato=False).all()
+        
+        # Converti a dizionario manualmente per evitare errori con to_dict()
+        clienti_dict = []
+        for c in clienti:
+            cliente_dict = {}
+            for column in c.__table__.columns:
+                value = getattr(c, column.name)
+                # Gestione di tipi di dati speciali
+                if isinstance(value, datetime):
+                    cliente_dict[column.name] = value.isoformat()
+                else:
+                    cliente_dict[column.name] = value
+            clienti_dict.append(cliente_dict)
+        
+        return jsonify({
+            'success': True,
+            'data': clienti_dict
+        })
+    except Exception as e:
+        import traceback
+        print(f"Errore durante il salvataggio dei clienti: {str(e)}")
+        print(traceback.format_exc())
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
     
     # Partner
     @app.route('/partner')
